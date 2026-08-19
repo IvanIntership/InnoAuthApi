@@ -1,3 +1,3 @@
-﻿namespace AuthApi.API.Entities;
+﻿namespace AuthApi.API.Dtos;
 
 public sealed record TemporaryCode(string Code);
