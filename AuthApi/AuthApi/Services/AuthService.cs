@@ -122,11 +122,13 @@ public sealed class AuthService : IAuthService
         {
             throw new InvalidOperationException($"Failed to assign the role '{roleName}' to the user in Keycloak.");
         }
-
+        
+        var guidKeycloakId = Guid.TryParse(keycloakUserId, out Guid parsedGuid) ? parsedGuid 
+            : throw new InvalidOperationException("Keycloak did not return a Guid.");
+        
         var entity = new User
         {
-            Id = Guid.NewGuid(),
-            KeycloakId = keycloakUserId,
+            Id = guidKeycloakId,
             Username = request.Username,
             Email = request.Email,
             Role = request.Role,
