@@ -34,7 +34,7 @@ public sealed class AuthService : IAuthService
         };
 
         var response = await httpClient.PostAsync(
-            $"/realms/{_keycloakOptions.Realm}/protocol/openid-connect/token",
+            $"realms/{_keycloakOptions.Realm}/protocol/openid-connect/token",
             new FormUrlEncodedContent(data),
             cancellationToken);
 
@@ -74,7 +74,7 @@ public sealed class AuthService : IAuthService
         };
         
         var response = await httpClient.PostAsJsonAsync(
-            $"/admin/realms/{_keycloakOptions.Realm}/users", 
+            $"admin/realms/{_keycloakOptions.Realm}/users", 
             userPayload, 
             cancellationToken);
 
@@ -93,7 +93,7 @@ public sealed class AuthService : IAuthService
 
         var roleName = request.Role.ToString();
         var roleResponse = await httpClient.GetAsync(
-            $"/admin/realms/{_keycloakOptions.Realm}/roles/{roleName}", 
+            $"admin/realms/{_keycloakOptions.Realm}/roles/{roleName}", 
             cancellationToken);
 
         if (!roleResponse.IsSuccessStatusCode)
@@ -114,7 +114,7 @@ public sealed class AuthService : IAuthService
         };
 
         var assignRoleResponse = await httpClient.PostAsJsonAsync(
-            $"/admin/realms/{_keycloakOptions.Realm}/users/{keycloakUserId}/role-mappings/realm", 
+            $"admin/realms/{_keycloakOptions.Realm}/users/{keycloakUserId}/role-mappings/realm", 
             roleToAssign, 
             cancellationToken);
 
@@ -151,7 +151,7 @@ public sealed class AuthService : IAuthService
         };
 
         var response = await httpClient.PostAsync(
-            $"/realms/{_keycloakOptions.Realm}/protocol/openid-connect/logout",
+            $"realms/{_keycloakOptions.Realm}/protocol/openid-connect/logout",
             new FormUrlEncodedContent(data),
             cancellationToken);
 
@@ -165,7 +165,7 @@ public sealed class AuthService : IAuthService
     {
         var baseUrl = _keycloakOptions.BaseUrl;
         var redirectUri = Uri.EscapeDataString(_keycloakOptions.RedirectUri);
-
+        
         return $"{baseUrl}/realms/{_keycloakOptions.Realm}/protocol/openid-connect/auth" +
                $"?client_id={_keycloakOptions.ClientId}" +
                $"&response_type=code" +
@@ -185,13 +185,14 @@ public sealed class AuthService : IAuthService
         };
 
         var response = await httpClient.PostAsync(
-            $"/realms/{_keycloakOptions.Realm}/protocol/openid-connect/token", 
+            $"realms/{_keycloakOptions.Realm}/protocol/openid-connect/token", 
             new FormUrlEncodedContent(data), 
             cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Cannot get Admin Token Keycloak. Status: {response.StatusCode}");
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException($"Keycloak error ({response.StatusCode}): {errorContent}");
         }
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
