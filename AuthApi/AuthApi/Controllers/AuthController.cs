@@ -1,5 +1,6 @@
 ﻿using AuthApi.API.Dtos;
 using AuthApi.API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -8,7 +9,6 @@ namespace AuthApi.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[Consumes("application/json")]
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -19,6 +19,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
+    [Consumes("application/json")]
     [SwaggerOperation(
         Summary = "Registers a new user",
         Description = "Creates a user in Keycloak, assigns a role, and saves the user entity locally.",
@@ -48,7 +49,7 @@ public sealed class AuthController : ControllerBase
         return Redirect(url);
     }
 
-    [HttpPost("exchange-code")]
+    [HttpGet("exchange-code")]
     [SwaggerOperation(
         Summary = "Exchanges authorization code for tokens",
         Description = "Exchanges the temporary authorization code for JWT access and refresh tokens.",
@@ -57,13 +58,20 @@ public sealed class AuthController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Tokens retrieved successfully", typeof(TokenResponse))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request body or parameters")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal service error or Keycloak integration failure")]
-    public async Task<IActionResult> ExchangeCode([FromBody] TemporaryCode request, CancellationToken ct = default)
+    public async Task<IActionResult> ExchangeCode([FromQuery(Name = "code")] string code, CancellationToken ct = default)
     {
-        var tokens = await _authService.ExchangeCodeForTokenAsync(request.Code, ct);
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return BadRequest("Authorization code is required.");
+        }
+
+        var tokens = await _authService.ExchangeCodeForTokenAsync(code, ct);
         return Ok(tokens);
     }
 
     [HttpPost("logout")]
+    [Authorize]
+    [Consumes("application/json")]
     [SwaggerOperation(
         Summary = "Logs out the user",
         Description = "Revokes the refresh token and ends the session in Keycloak.",

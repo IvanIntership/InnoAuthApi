@@ -2,7 +2,7 @@
 
 public enum Roles
 {
-    User=0,
+    Patient=0,
     Doctor=1,
     Administrator=2
 }
