@@ -62,9 +62,10 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var keycloakUrl = builder.Configuration["Keycloak:BaseUrl"]?.TrimEnd('/');
-    var realm = builder.Configuration["Keycloak:Realm"];
-    var authority = $"{keycloakUrl}/realms/{realm}";
+    var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>()
+                          ?? throw new InvalidOperationException("Keycloak options are missing.");
+
+    var authority = $"{keycloakOptions.BaseUrl.TrimEnd('/')}/realms/{keycloakOptions.Realm}";
 
     options.Authority = authority;
     options.RequireHttpsMetadata = false;
