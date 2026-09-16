@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using AuthApi.API.Dtos;
 using AuthApi.API.Entities;
 using AuthApi.API.Interfaces;
