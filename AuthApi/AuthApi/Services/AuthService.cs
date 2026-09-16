@@ -51,15 +51,15 @@ public sealed class AuthService : IAuthService
     public async Task<bool> RegisterUserAsync(RegisterUserRequest request, CancellationToken cancellationToken)
     {
         var adminToken = await GetAdministratorToken(cancellationToken);
-    
         using var httpClient = _httpClientFactory.CreateClient("KeycloakClient");
         
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
-        
         var userPayload = new
         {
-            username = request.Username,
+            username = request.Email,
             email = request.Email,
+            firstName = request.Firstname,
+            lastName = request.Lastname,
             enabled = true,
             emailVerified = true,
             credentials = new[]
@@ -129,13 +129,13 @@ public sealed class AuthService : IAuthService
         var entity = new User
         {
             Id = guidKeycloakId,
-            Username = request.Username,
+            Username = request.Email,
             Email = request.Email,
             Role = request.Role,
         };
-
+        
         await _userRepository.AddAsync(entity, cancellationToken);
-
+        
         return true;
     }
 
