@@ -1,5 +1,6 @@
 ﻿using AuthApi.API.Dtos;
 using FluentValidation;
+using InnoClinic.Shared.Events;
 
 namespace AuthApi.API.Validation;
 

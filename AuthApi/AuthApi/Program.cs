@@ -1,3 +1,4 @@
+using AuthApi.API.Consumers;
 using AuthApi.API.Data;
 using AuthApi.API.Dtos;
 using AuthApi.API.Interfaces;
@@ -6,6 +7,7 @@ using AuthApi.API.Repositories;
 using AuthApi.API.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -92,6 +94,33 @@ builder.Services.AddHttpClient("KeycloakClient", client =>
 
     var normalizedUrl = keycloakBaseUrl.TrimEnd('/') + "/";
     client.BaseAddress = new Uri(normalizedUrl);
+});
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<StaffCreatedConsumer>();
+    
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitSettings = builder.Configuration.GetSection("RabbitMQ");
+
+        cfg.Host(
+            rabbitSettings["Host"] ?? "localhost", 
+            rabbitSettings["VirtualHost"] ?? "/", 
+            h =>
+            {
+                h.Username(rabbitSettings["Username"] ?? "guest");
+                h.Password(rabbitSettings["Password"] ?? "guest");
+            }
+        );
+        
+        cfg.ReceiveEndpoint("staff-created-queue", e =>
+        {
+            e.ConfigureConsumer<StaffCreatedConsumer>(context);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 var app = builder.Build();

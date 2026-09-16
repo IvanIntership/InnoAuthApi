@@ -31,7 +31,7 @@ public sealed class AuthController : ControllerBase
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal service error or Keycloak integration failure")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request, CancellationToken ct = default)
     {
-        var result = await _authService.RegisterUserAsync(request, ct);
+        var result = await _authService.RegisterUserAsync(request, null, ct);
         return Ok(result);
     }
 

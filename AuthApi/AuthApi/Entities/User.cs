@@ -1,4 +1,4 @@
-﻿using AuthApi.API.Enums;
+﻿using InnoClinic.Shared.Events;
 
 namespace AuthApi.API.Entities;
 
