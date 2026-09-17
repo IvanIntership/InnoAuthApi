@@ -46,7 +46,7 @@ public sealed class AuthController : ControllerBase
     public IActionResult Login()
     {
         var url = _authService.GetAuthorizationRequestUrl();
-        return Redirect(url);
+        return Ok(url);
     }
 
     [HttpGet("exchange-code")]
