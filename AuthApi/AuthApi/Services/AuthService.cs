@@ -236,4 +236,30 @@ public sealed class AuthService : IAuthService
         using var doc = JsonDocument.Parse(json);
         return doc.RootElement.GetProperty("access_token").GetString()!;
     }
+    
+    public async Task<TokenResponse> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        using var httpClient = _httpClientFactory.CreateClient("KeycloakClient");
+
+        var data = new Dictionary<string, string>
+        {
+            { "grant_type", "refresh_token" },
+            { "client_id", _keycloakOptions.ClientId },
+            { "client_secret", _keycloakOptions.ClientSecret },
+            { "refresh_token", refreshToken }
+        };
+
+        var response = await httpClient.PostAsync(
+            $"realms/{_keycloakOptions.Realm}/protocol/openid-connect/token",
+            new FormUrlEncodedContent(data),
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Failed to refresh token. Status: {response.StatusCode}");
+        }
+
+        var tokens = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken);
+        return tokens ?? throw new InvalidOperationException("Keycloak returned empty response.");
+    }
 }

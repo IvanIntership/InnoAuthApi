@@ -85,4 +85,20 @@ public sealed class AuthController : ControllerBase
         await _authService.SignOutUserAsync(request.Code, ct);
         return NoContent();
     }
+    
+    [HttpPost("refresh")]
+    [Consumes("application/json")]
+    [SwaggerOperation(
+        Summary = "Refreshes JWT access token",
+        Description = "Exchanges a valid refresh token for a new pair of access and refresh tokens.",
+        OperationId = "RefreshToken"
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Tokens refreshed successfully", typeof(TokenResponse))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid refresh token")]
+    [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal service error or Keycloak integration failure")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken ct = default)
+    {
+        var tokens = await _authService.RefreshTokenAsync(request.RefreshToken, ct);
+        return Ok(tokens);
+    }
 }

@@ -8,4 +8,5 @@ public interface IAuthService
     Task<TokenResponse> ExchangeCodeForTokenAsync(string code, CancellationToken cancellationToken);
     Task SignOutUserAsync(string refreshToken, CancellationToken cancellationToken);
     string GetAuthorizationRequestUrl();
+    Task<TokenResponse> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
 }
